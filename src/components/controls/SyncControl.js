@@ -1,13 +1,13 @@
 import { number } from 'prop-types';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 
-import { MapContext } from '../MapProvider';
+import { useMap } from '../MapContext';
 
 const SyncControl = ({ bottomSpace = 0, resizeTimeout = 100 }) => {
-	const { map } = useContext(MapContext);
+	const { map, SMap } = useMap();
 
 	useEffect(() => {
-		const syncControl = new window.SMap.Control.Sync({
+		const syncControl = new SMap.Control.Sync({
 			bottomSpace,
 			resizeTimeout,
 		});
@@ -16,7 +16,7 @@ const SyncControl = ({ bottomSpace = 0, resizeTimeout = 100 }) => {
 		return () => {
 			map.removeControl(syncControl);
 		};
-	}, [bottomSpace, map, resizeTimeout]);
+	}, [bottomSpace, map, resizeTimeout, SMap]);
 
 	return null;
 };

@@ -1,7 +1,7 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { arrayOf, bool, number, shape, string } from 'prop-types';
 
-import { MapContext } from '../MapProvider';
+import { useMap } from '../MapContext';
 
 // https://api.mapy.cz/doc/SMap.Control.Zoom.html
 const ZoomControl = ({
@@ -11,10 +11,10 @@ const ZoomControl = ({
 	step = 9,
 	titles = [],
 }) => {
-	const { map } = useContext(MapContext);
+	const { map, SMap } = useMap();
 
 	useEffect(() => {
-		const zoomControl = new window.SMap.Control.Zoom(labels, {
+		const zoomControl = new SMap.Control.Zoom(labels, {
 			showZoomMenu,
 			sliderHeight,
 			step,
@@ -25,7 +25,7 @@ const ZoomControl = ({
 		return () => {
 			map.removeControl(zoomControl);
 		};
-	}, [labels, map, showZoomMenu, sliderHeight, step, titles]);
+	}, [labels, map, showZoomMenu, sliderHeight, SMap, step, titles]);
 
 	return null;
 };

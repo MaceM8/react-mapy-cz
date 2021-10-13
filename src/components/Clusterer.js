@@ -1,7 +1,7 @@
-import { useContext, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 
-import { MapContext } from './MapProvider';
-import { MarkerLayerContext } from './MarkerLayer';
+import { useMap } from './MapContext';
+import { useMarkerLayer } from './MarkerLayer';
 
 /**
  * Clusterer for markers.
@@ -12,11 +12,19 @@ import { MarkerLayerContext } from './MarkerLayer';
  * @returns null
  */
 const Clusterer = () => {
-	const { map } = useContext(MapContext);
-	const clusterer = useMemo(() => new window.SMap.Marker.Clusterer(map), [map]);
+	const { map, sMap } = useMap();
+	const markerLayer = useMarkerLayer();
+	const clustererRef = useRef();
 
-	const markerLayer = useContext(MarkerLayerContext);
-	markerLayer.setClusterer(clusterer);
+	useEffect(() => {
+		clustererRef.current = new sMap.Marker.Clusterer(map);
+
+		markerLayer.setClusterer(clustererRef.current);
+
+		return () => {
+			markerLayer.removeClusterer(clustererRef.current);
+		};
+	}, [map, markerLayer, sMap]);
 
 	return null;
 };

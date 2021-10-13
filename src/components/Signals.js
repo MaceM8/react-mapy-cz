@@ -1,7 +1,7 @@
-import { useContext, useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { func } from 'prop-types';
 
-import { MapContext } from './MapProvider';
+import { useMap } from './MapContext';
 
 /**
  * Event listener for actions happening on the map.
@@ -12,27 +12,35 @@ import { MapContext } from './MapProvider';
  * @returns null
  */
 const Signals = ({ onClusterClick, onMarkerClick }) => {
-	const { map } = useContext(MapContext);
+	const { map } = useMap();
+	// https://epicreact.dev/the-latest-ref-pattern-in-react/
+	const onClusterClickRef = useRef(onClusterClick);
+	const onMarkerClickRef = useRef(onMarkerClick);
+
+	useLayoutEffect(() => {
+		onClusterClickRef.current = onClusterClick;
+		onMarkerClickRef.current = onMarkerClick;
+	});
 
 	useEffect(() => {
 		// TODO: For open-source add additional signals
-		if (onMarkerClick || onClusterClick) {
+		if (onMarkerClickRef.current || onClusterClickRef.current) {
 			map.getSignals().addListener(this, 'marker-click', (e) => {
-				if (!e.target._clusterOptions && onMarkerClick) {
-					onMarkerClick(e.target);
+				if (!e.target._clusterOptions && onMarkerClickRef.current) {
+					onMarkerClickRef.current(e.target);
 				}
-				if (e.target._clusterOptions && onClusterClick) {
-					onClusterClick(e.target);
+				if (e.target._clusterOptions && onClusterClickRef.current) {
+					onClusterClickRef.current(e.target);
 				}
 			});
 		}
 
 		return () => {
-			if (onMarkerClick || onClusterClick) {
+			if (onMarkerClickRef.current || onClusterClickRef.current) {
 				map.getSignals().removeListener(this, 'marker-click', true);
 			}
 		};
-	}, [map, onClusterClick, onMarkerClick]);
+	}, [map]);
 
 	return null;
 };

@@ -1,9 +1,10 @@
-import { useContext, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { arrayOf, shape } from 'prop-types';
 
 import { markerShape } from '../utils/shapes';
 
-import { MarkerLayerContext } from './MarkerLayer';
+import { useMarkerLayer } from './MarkerLayer';
+import { useMap } from '.';
 
 /**
  * Component for rendering large numbers of markers at once.
@@ -16,37 +17,46 @@ import { MarkerLayerContext } from './MarkerLayer';
  * @returns component
  */
 const MultipleMarkers = ({ markersData }) => {
-	const markerLayer = useContext(MarkerLayerContext);
+	const markerLayer = useMarkerLayer();
+	const { SMap } = useMap();
+	const markersDataRef = useRef();
+	const markersRef = useRef();
 
 	useEffect(() => {
-		markerLayer?.removeAll();
+		if (
+			JSON.stringify(markersDataRef.current) !== JSON.stringify(markersData)
+		) {
+			const markersArray = markersData.map(
+				({ coords, imgSrc, tooltip, ...props }) => {
+					const options = {
+						...(imgSrc ? { url: imgSrc } : undefined),
+						...(tooltip ? { title: tooltip } : undefined),
+						...props,
+					};
+					const mapCoords = SMap.Coords.fromWGS84(
+						coords.longitude,
+						coords.latitude
+					);
 
-		const markersArray = markersData.map(
-			({ coords, imgSrc, tooltip, ...props }) => {
-				const options = {
-					...(imgSrc ? { url: imgSrc } : undefined),
-					...(tooltip ? { title: tooltip } : undefined),
-					...props,
-				};
-				const mapCoords = window.SMap.Coords.fromWGS84(
-					coords.longitude,
-					coords.latitude
-				);
+					return new SMap.Marker(
+						mapCoords,
+						false,
+						Object.keys(options).length > 0 ? options : undefined
+					);
+				}
+			);
 
-				return new window.SMap.Marker(
-					mapCoords,
-					false,
-					Object.keys(options).length > 0 ? options : undefined
-				);
-			}
-		);
+			markerLayer?.removeMarker(markersRef.current);
+			markerLayer?.addMarker(markersArray);
 
-		markerLayer?.addMarker(markersArray);
+			markersDataRef.current = markersData;
+			markersRef.current = markersArray;
+		}
 
 		return () => {
-			markerLayer?.removeMarker(markersArray, true);
+			markerLayer?.removeMarker(markersRef.current, true);
 		};
-	}, [markerLayer, markersData]);
+	}, [markerLayer, markersData, SMap]);
 
 	return null;
 };

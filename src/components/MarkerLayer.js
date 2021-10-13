@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useRef } from 'react';
-import { func, node } from 'prop-types';
+import { node } from 'prop-types';
 
 import { getContextHook } from '../utils/getContextHook';
 import { useMap } from './MapContext';
@@ -8,27 +8,24 @@ const MarkerLayerContext = createContext();
 
 export const useMarkerLayer = getContextHook(MarkerLayerContext, 'MarkerLayer');
 
-const MarkerLayer = ({ children, onAfterCreate }) => {
+// TODO: Add possibility to get reference to layer - so we can get all rendered markers
+const MarkerLayer = ({ children }) => {
 	const { map, sMap } = useMap();
-	const markerLayer = useRef();
+	const markerLayerRef = useRef();
 
 	useEffect(() => {
-		markerLayer.current = new sMap.Layer.Marker();
+		markerLayerRef.current = new sMap.Layer.Marker();
 
-		map?.addLayer(markerLayer);
-		markerLayer.enable();
-
-		// if (onAfterCreate) {
-		// 	onAfterCreate(markerLayer);
-		// }
+		map?.addLayer(markerLayerRef.current);
+		markerLayerRef.current.enable();
 
 		return () => {
-			map.removeLayer(markerLayer);
+			map.removeLayer(markerLayerRef.current);
 		};
-	}, [map, onAfterCreate, sMap]);
+	}, [map, sMap]);
 
 	return (
-		<MarkerLayerContext.Provider value={markerLayer}>
+		<MarkerLayerContext.Provider value={markerLayerRef.current}>
 			{children}
 		</MarkerLayerContext.Provider>
 	);
@@ -36,8 +33,6 @@ const MarkerLayer = ({ children, onAfterCreate }) => {
 
 MarkerLayer.propTypes = {
 	children: node,
-	/** Callback returning instance of markerLayer object - for getting all rendered markers f.e. */
-	onAfterCreate: func,
 };
 
 export default MarkerLayer;

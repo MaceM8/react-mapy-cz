@@ -10,9 +10,9 @@
  * @returns null
  */
 const setMapCenter =
-	(map) =>
+	(map, SMap) =>
 	(longitude, latitude, zoom = 17, animate = true) => {
-		const newCoords = window.SMap.Coords.fromWGS84(longitude, latitude);
+		const newCoords = SMap.Coords.fromWGS84(longitude, latitude);
 		map.setCenterZoom(newCoords, zoom, animate);
 	};
 

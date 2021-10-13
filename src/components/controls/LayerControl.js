@@ -1,13 +1,13 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { number } from 'prop-types';
 
-import { MapContext } from '../MapProvider';
+import { useMap } from '../MapContext';
 
 const LayerControl = ({ width = 65, pageSize }) => {
-	const { map, mapLayers } = useContext(MapContext);
+	const { map, mapLayers, SMap } = useMap();
 
 	useEffect(() => {
-		const layerSwitch = new window.SMap.Control.Layer({
+		const layerSwitch = new SMap.Control.Layer({
 			items: pageSize,
 			page: pageSize,
 			width,
@@ -22,7 +22,7 @@ const LayerControl = ({ width = 65, pageSize }) => {
 		return () => {
 			map.removeControl(layerSwitch);
 		};
-	}, [map, mapLayers, pageSize, width]);
+	}, [map, mapLayers, pageSize, width, SMap]);
 
 	return null;
 };

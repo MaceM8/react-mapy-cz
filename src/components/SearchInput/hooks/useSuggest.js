@@ -1,23 +1,29 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 
-import { MapContext } from '../../MapProvider';
+import { useMap } from '../../MapContext';
 
-const useSuggest = (inputRef, disableSuggest, onSuggestItemSelect) => {
-	const { setMapCenter } = useContext(MapContext);
+const defaultConfig = {
+	// CZ
+	bounds: '48.5370786,12.0921668|51.0746358,18.8927040',
+	enableCategories: 0,
+	lang: 'cs,en',
+};
+
+const useSuggest = (
+	inputRef,
+	disableSuggest,
+	onSuggestItemSelect,
+	config = defaultConfig
+) => {
+	const { setMapCenter, sMap } = useMap();
 
 	useEffect(() => {
 		let suggest;
 
 		if (!disableSuggest) {
-			suggest = new window.SMap.Suggest(inputRef.current, {
-				provider: new window.SMap.SuggestProvider({
-					updateParams: (params) => {
-						// TODO: Take data in props
-						// Only search in CR
-						params.bounds = '48.5370786,12.0921668|51.0746358,18.8927040';
-						params.enableCategories = 0;
-						params.lang = 'cs,en';
-					},
+			suggest = new sMap.Suggest(inputRef.current, {
+				provider: new sMap.SuggestProvider({
+					updateParams: (params) => ({ ...params, ...config }),
 				}),
 			});
 			suggest.addListener('suggest', ({ data }) => {
@@ -34,7 +40,14 @@ const useSuggest = (inputRef, disableSuggest, onSuggestItemSelect) => {
 				suggest.removeListener('suggest');
 			}
 		};
-	}, [disableSuggest, inputRef, onSuggestItemSelect, setMapCenter]);
+	}, [
+		config,
+		disableSuggest,
+		inputRef,
+		onSuggestItemSelect,
+		setMapCenter,
+		sMap,
+	]);
 };
 
 export default useSuggest;

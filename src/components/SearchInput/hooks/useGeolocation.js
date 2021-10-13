@@ -1,29 +1,34 @@
-import { useContext } from 'react';
-
-import { MapContext } from '../../MapProvider';
+import { useCallback } from 'react';
+import { useMap } from '../../MapContext';
 
 const useGeolocation = (searchValue, disableGeolocation) => {
-	const { setMapCenter } = useContext(MapContext);
+	const { setMapCenter, sMap } = useMap();
 
+	// Function uses all params that can change frequently, memoizing not desired
 	const handleSubmit = (event) => {
 		event.preventDefault();
 
 		if (!disableGeolocation) {
-			new window.SMap.Geocoder(searchValue, geocodeResultsCallback);
+			new sMap.Geocoder(searchValue, geocodeResultsCallback);
 		}
 	};
 
-	const geocodeResultsCallback = (geocoder) => {
-		if (!geocoder.getResults()[0].results.length) {
-			// eslint-disable-next-line no-console
-			console.error('Place not found');
+	const geocodeResultsCallback = useCallback(
+		(geocoder) => {
+			const results = geocoder.getResults()[0].results;
 
-			return;
-		}
+			if (!results.length) {
+				// eslint-disable-next-line no-console
+				console.error('Place not found');
 
-		const results = geocoder.getResults()[0].results;
-		setMapCenter(results[0].coords.x, results[0].coords.y);
-	};
+				return;
+			}
+
+			const firstResultCoords = results[0].coords;
+			setMapCenter(firstResultCoords.x, firstResultCoords.y);
+		},
+		[setMapCenter]
+	);
 
 	return handleSubmit;
 };

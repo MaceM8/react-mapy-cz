@@ -1,11 +1,13 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useMap } from '.';
 
 import { markerShape } from '../utils/shapes';
 
-import { MarkerLayerContext } from './MarkerLayer';
+import { useMarkerLayer } from './MarkerLayer';
 
 const Marker = ({ coords, imgSrc, tooltip, ...props }) => {
-	const markerLayer = useContext(MarkerLayerContext);
+	const markerLayer = useMarkerLayer();
+	const { SMap } = useMap();
 
 	useEffect(() => {
 		const options = {
@@ -14,11 +16,8 @@ const Marker = ({ coords, imgSrc, tooltip, ...props }) => {
 			...props,
 		};
 
-		const mapCoords = window.SMap.Coords.fromWGS84(
-			coords.longitude,
-			coords.latitude
-		);
-		const marker = new window.SMap.Marker(
+		const mapCoords = SMap.Coords.fromWGS84(coords.longitude, coords.latitude);
+		const marker = new SMap.Marker(
 			mapCoords,
 			false,
 			Object.keys(options).length > 0 ? options : undefined
@@ -29,7 +28,7 @@ const Marker = ({ coords, imgSrc, tooltip, ...props }) => {
 		return () => {
 			markerLayer?.removeMarker(marker, true);
 		};
-	}, [coords, imgSrc, markerLayer, props, tooltip]);
+	}, [coords, imgSrc, markerLayer, props, SMap, tooltip]);
 
 	return null;
 };

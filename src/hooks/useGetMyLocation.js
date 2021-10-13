@@ -1,12 +1,12 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { MapContext } from '../components/MapProvider';
+import { useMap } from '../components/MapContext';
 
 const useGetMyLocation = (onLocationFound, onError = () => {}) => {
 	const [loading, setLoading] = useState(false);
 	const [geolocationEnabled, setGeolocationEnabled] = useState(true);
 
-	const { setMapCenter } = useContext(MapContext);
+	const { setMapCenter } = useMap();
 
 	useEffect(() => {
 		if (navigator?.permissions) {

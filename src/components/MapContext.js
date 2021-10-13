@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useRef, useState } from 'react';
 import { arrayOf, node, number, oneOf, shape, string } from 'prop-types';
 
 import { BaseLayers } from '../utils/constants';
@@ -21,19 +21,14 @@ const MapProvider = ({
 	zoom,
 }) => {
 	const [map, setMap] = useState();
-	const [sMap, setSMap] = useState();
+	const SMap = useRef();
 
 	useEffect(() => {
 		if (!map) {
-			const sMap = window.sMap;
-			setSMap(sMap);
+			SMap.current = window.SMap;
 
-			const centerCoords = window.SMap.Coords.fromWGS84(center.lng, center.lat);
-			const mapInstance = new window.SMap(
-				window.JAK.gel(id),
-				centerCoords,
-				zoom
-			);
+			const centerCoords = SMap.Coords.fromWGS84(center.lng, center.lat);
+			const mapInstance = new SMap(window.JAK.gel(id), centerCoords, zoom);
 			mapInstance.setZoomRange(minZoom, maxZoom);
 
 			const [firstLayer, ...otherLayers] = mapLayers;
@@ -52,7 +47,13 @@ const MapProvider = ({
 
 	return (
 		<MapContext.Provider
-			value={{ id, map, mapLayers, setMapCenter: setMapCenter(map), sMap }}
+			value={{
+				id,
+				map,
+				mapLayers,
+				setMapCenter: setMapCenter(map, SMap),
+				SMap: SMap.current,
+			}}
 		>
 			{children}
 		</MapContext.Provider>

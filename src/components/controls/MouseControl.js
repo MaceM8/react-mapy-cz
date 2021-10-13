@@ -1,25 +1,25 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 
-import { MapContext } from '../MapProvider';
+import { useMap } from '../MapContext';
 
 const MouseControl = ({ pan, wheel, zoom }) => {
+	const { map, SMap } = useMap();
+
 	let mode = 0;
 
-	mode |= pan && window.SMap.MOUSE_PAN;
-	mode |= zoom && window.SMap.MOUSE_ZOOM;
-	mode |= wheel && window.SMap.MOUSE_WHEEL;
-
-	const { map } = useContext(MapContext);
+	mode |= pan && SMap.MOUSE_PAN;
+	mode |= zoom && SMap.MOUSE_ZOOM;
+	mode |= wheel && SMap.MOUSE_WHEEL;
 
 	useEffect(() => {
-		const mouseControl = new window.SMap.Control.Mouse(mode);
+		const mouseControl = new SMap.Control.Mouse(mode);
 
 		map.addControl(mouseControl);
 
 		return () => {
 			map.removeControl(mouseControl);
 		};
-	}, [map, mode]);
+	}, [map, mode, SMap]);
 
 	return null;
 };

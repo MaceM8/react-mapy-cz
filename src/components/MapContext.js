@@ -5,8 +5,11 @@ import { BaseLayers } from '../utils/constants';
 import { coordsShape } from '../utils/shapes';
 import mapScriptLoader from '../hoc/mapScriptLoader';
 import setMapCenter from '../utils/setMapCenter';
+import { getContextHook } from '../utils/getContextHook';
 
-export const MapContext = createContext(null);
+const MapContext = createContext();
+
+export const useMap = getContextHook(MapContext, 'MapProvider');
 
 const MapProvider = ({
 	center,
@@ -17,30 +20,39 @@ const MapProvider = ({
 	minZoom = 1,
 	zoom,
 }) => {
-	const [map, setMap] = useState(null);
-
-	// 	Should not we use clean up function for the useEffect? to destroy already existing map?
-	// Can't we have only reference to current SMap? and update the properties when they change without destroying already created instance.
+	const [map, setMap] = useState();
+	const [sMap, setSMap] = useState();
 
 	useEffect(() => {
 		if (!map) {
+			const sMap = window.sMap;
+			setSMap(sMap);
+
 			const centerCoords = window.SMap.Coords.fromWGS84(center.lng, center.lat);
-			const sMap = new window.SMap(window.JAK.gel(id), centerCoords, zoom);
-			sMap.setZoomRange(minZoom, maxZoom);
+			const mapInstance = new window.SMap(
+				window.JAK.gel(id),
+				centerCoords,
+				zoom
+			);
+			mapInstance.setZoomRange(minZoom, maxZoom);
 
 			const [firstLayer, ...otherLayers] = mapLayers;
-			sMap.addDefaultLayer(firstLayer).enable();
+			mapInstance.addDefaultLayer(firstLayer).enable();
 			otherLayers.forEach((layer) => {
-				sMap.addDefaultLayer(layer);
+				mapInstance.addDefaultLayer(layer);
 			});
 
-			setMap(sMap);
+			setMap(mapInstance);
 		}
+
+		return () => {
+			map?.$destructor();
+		};
 	}, [center, id, map, mapLayers, maxZoom, minZoom, zoom]);
 
 	return (
 		<MapContext.Provider
-			value={{ id, map, mapLayers, setMapCenter: setMapCenter(map) }}
+			value={{ id, map, mapLayers, setMapCenter: setMapCenter(map), sMap }}
 		>
 			{children}
 		</MapContext.Provider>

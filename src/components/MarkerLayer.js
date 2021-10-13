@@ -1,26 +1,31 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useEffect, useRef } from 'react';
 import { func, node } from 'prop-types';
 
-import { MapContext } from './MapProvider';
+import { getContextHook } from '../utils/getContextHook';
+import { useMap } from './MapContext';
 
-export const MarkerLayerContext = createContext(null);
+const MarkerLayerContext = createContext();
 
-const MarkerLayer = ({ children, afterCreate }) => {
-	const { map } = useContext(MapContext);
-	const markerLayer = new window.SMap.Layer.Marker();
+export const useMarkerLayer = getContextHook(MarkerLayerContext, 'MarkerLayer');
 
-	map?.addLayer(markerLayer);
-	markerLayer.enable();
+const MarkerLayer = ({ children, onAfterCreate }) => {
+	const { map, sMap } = useMap();
+	const markerLayer = useRef();
 
 	useEffect(() => {
-		if (afterCreate) {
-			afterCreate(markerLayer);
-		}
+		markerLayer.current = new sMap.Layer.Marker();
+
+		map?.addLayer(markerLayer);
+		markerLayer.enable();
+
+		// if (onAfterCreate) {
+		// 	onAfterCreate(markerLayer);
+		// }
 
 		return () => {
 			map.removeLayer(markerLayer);
 		};
-	});
+	}, [map, onAfterCreate, sMap]);
 
 	return (
 		<MarkerLayerContext.Provider value={markerLayer}>
@@ -30,8 +35,9 @@ const MarkerLayer = ({ children, afterCreate }) => {
 };
 
 MarkerLayer.propTypes = {
-	afterCreate: func,
 	children: node,
+	/** Callback returning instance of markerLayer object - for getting all rendered markers f.e. */
+	onAfterCreate: func,
 };
 
 export default MarkerLayer;

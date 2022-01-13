@@ -26,4 +26,4 @@ jobs:
           cd website
           yarn && yarn deploy
         env:
-          GIT_USER: $RUNNER_NAME
+          GIT_USER: MaceM8

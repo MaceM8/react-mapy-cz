@@ -29,7 +29,7 @@
     "generateChangelog": "standard-version",
     "prepublish": "yarn build",
     "prepublishOnly": "yarn",
-    "lernaPublish": "yarn generateChangelog && lerna publish"
+    "lernaPublish": "lerna publish"
   },
   "peerDependencies": {
     "prop-types": ">=15.7.2",
